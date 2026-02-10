@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".FindAccountActivity">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="@font/libre_barcode_39_text"
+            android:text="CHAIN-G"
+            android:textSize="35dp" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="ACCOUNT SUPPORT"
+            android:textSize="17dp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="50dp"
+            android:text="계정 정보를 분실하셨나요? 시스템 관리자에게 문의하세요."
+            android:textSize="12dp"
+            android:textColor="#666666" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="방법 1. 비밀번호 재설정 메일 발송"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="30dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/editTextText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="chain-g@email.com"
+                android:inputType="text"
+                android:textSize="12dp" />
+
+            <TextView
+                android:id="@+id/button6"
+                android:layout_width="70dp"
+                android:layout_height="35dp"
+                android:background="@drawable/btn_navy_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="발송"
+                android:textColor="#ffffff"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:text="방법 2. 시스템 총괄 관리자 문의"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="내선 번호: 02-1234-5678 (운영지원팀)"
+            android:textSize="12dp"
+            android:textColor="#666666" />
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="이메일: chain-g@email.com"
+            android:textSize="12dp"
+            android:layout_marginBottom="20dp"
+            android:textColor="#666666" />
+
+        <TextView
+            android:id="@+id/back_btn"
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:text="로그인 화면으로 돌아가기"
+            android:textSize="12sp"
+            android:gravity="center"
+            android:background="@drawable/btn_white_selector"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+</LinearLayout>
