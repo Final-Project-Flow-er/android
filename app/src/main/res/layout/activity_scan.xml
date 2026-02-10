@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    tools:context=".ScanActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#2C3E50"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="15dp"
+        android:paddingRight="5dp">
+
+        <TextView
+            android:id="@+id/btn_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CHAIN-G"
+            android:textColor="#FFFFFF"
+            android:fontFamily="@font/libre_barcode_39_text"
+            android:textSize="18sp"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="제품 코드 스캔"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:layout_marginLeft="20dp"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close"
+            android:contentDescription="닫기"
+            android:scaleType="centerInside"
+            android:tint="#FFFFFF" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.7"
+        android:background="#000000">
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="#F8F9FA"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="현재 박스 코드 : "
+            android:textColor="#495057"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_current_box_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            tools:text="박스 코드"
+            android:textColor="#1971C2"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginLeft="5dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.2"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="제품 스캔 목록"
+            android:textColor="#212529"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="550dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="#F1F3F5"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp">
+                    <TextView android:layout_width="120dp" android:layout_height="wrap_content" android:text="식별코드" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                    <TextView android:layout_width="100dp" android:layout_height="wrap_content" android:text="제품코드" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                    <TextView android:layout_width="100dp" android:layout_height="wrap_content" android:text="제품명" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                    <TextView android:layout_width="90dp" android:layout_height="wrap_content" android:text="생산일" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                    <TextView android:layout_width="90dp" android:layout_height="wrap_content" android:text="유통기한" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                    <TextView android:layout_width="50dp" android:layout_height="wrap_content" android:text="삭제" android:textSize="11sp" android:textStyle="bold" android:gravity="center" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_product_list"
+                    android:layout_width="550dp"
+                    android:layout_height="match_parent"
+                    tools:listitem="@layout/item_product_result"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+            <TextView
+                android:id="@+id/btn_assign"
+                android:layout_width="200dp"
+                android:layout_height="35dp"
+                android:text="할당"
+                android:textSize="13sp"
+                android:textColor="#ffffff"
+                android:gravity="center"
+                android:background="@drawable/btn_navy_selector"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

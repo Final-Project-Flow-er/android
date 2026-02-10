@@ -12,7 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ChainG">
         <activity
-            android:name=".FindAccountActivity"
+            android:name=".InDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SaleScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FranManagerMainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".BoxScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".FacManagerMainActivity"
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
