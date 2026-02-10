@@ -30,6 +30,9 @@
             android:name=".FacManagerMainActivity"
             android:exported="false" />
         <activity
+            android:name=".FindAccountActivity"
+            android:exported="false" />
+        <activity
             android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>

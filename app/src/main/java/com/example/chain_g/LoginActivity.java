@@ -32,10 +32,12 @@ public class LoginActivity extends AppCompatActivity {
 
         loginButton.setOnClickListener(v -> {
 
-            if(id.toString().equals("fac")) {
+            String inputId = id.getText().toString().trim();
+
+            if(inputId.equals("fac")) {
                 Intent intent = new Intent(LoginActivity.this, FacManagerMainActivity.class);
                 startActivity(intent);
-            } else if (id.toString().equals("fran")) {
+            } else if (inputId.equals("fran")) {
                 Intent intent = new Intent(LoginActivity.this, FranManagerMainActivity.class);
                 startActivity(intent);
             }
