@@ -24,36 +24,44 @@
             android:textSize="50dp" />
 
         <EditText
-            android:id="@+id/editTextText"
-            android:layout_width="wrap_content"
+            android:id="@+id/id"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="ID"
-            android:inputType="text" />
+            android:inputType="text"
+            android:textSize="15dp" />
 
         <EditText
-            android:id="@+id/editTextText2"
-            android:layout_width="wrap_content"
+            android:id="@+id/password"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="PW"
-            android:inputType="text" />
-
-        <Button
-            android:id="@+id/button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:backgroundTint="#334155"
-            android:text="Login" />
+            android:inputType="text"
+            android:textSize="15dp" />
 
         <TextView
-            android:id="@+id/button3"
+            android:id="@+id/login_btn"
+            android:layout_width="220dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="15dp"
+            android:text="Login"
+            android:textSize="14sp"
+            android:textColor="#ffffff"
+            android:gravity="center"
+            android:background="@drawable/btn_navy_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/find_account_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="계정 분실 문의"
             android:textColor="#666666"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:gravity="center"
             android:clickable="true"
             android:focusable="true"
