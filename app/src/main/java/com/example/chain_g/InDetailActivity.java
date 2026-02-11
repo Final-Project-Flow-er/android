@@ -2,6 +2,7 @@ package com.example.chain_g;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 public class InDetailActivity extends AppCompatActivity {
 
@@ -18,26 +20,34 @@ public class InDetailActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_in_detail);
 
-        // 상단 바(시스템 바) 영역 겹치지 않게 조절하는 코드!
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        View mainLayout = findViewById(R.id.main);
+        View toolbar = findViewById(R.id.toolbar);
+
+        // 시스템 바 영역 설정 (상태바 겹침 방지)
+        ViewCompat.setOnApplyWindowInsetsListener(mainLayout, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+            if (toolbar != null) {
+                toolbar.setPadding(toolbar.getPaddingLeft(), systemBars.top, toolbar.getPaddingRight(), toolbar.getPaddingBottom());
+            }
+            WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(getWindow(), v);
+            controller.setAppearanceLightStatusBars(false);
             return insets;
         });
 
-        // 1. 버튼들 연결하기
-        ImageButton btnBack = findViewById(R.id.btn_back); // 뒤로 가기 화살표
-        TextView btnHome = findViewById(R.id.btn_home);   // 홈 로고 또는 글자
+        // 전달받은 박스 코드 표시
+        String boxCode = getIntent().getStringExtra("selected_box");
+        TextView tvBoxCode = findViewById(R.id.tv_current_box_code);
+        if (boxCode != null && tvBoxCode != null) {
+            tvBoxCode.setText(boxCode);
+        }
 
-        // 2. 뒤로 가기 버튼 눌렀을 때 (이전 스캔 화면으로!)
-        btnBack.setOnClickListener(v -> {
-            finish(); // 현재 상세 화면만 닫고 이전 화면으로 돌아가기
-        });
+        ImageButton btnBack = findViewById(R.id.btn_back);
+        TextView btnHome = findViewById(R.id.btn_home);
 
-        // 3. 홈 버튼 눌렀을 때 (관리자 메인 화면으로 한방에!)
+        btnBack.setOnClickListener(v -> finish());
         btnHome.setOnClickListener(v -> {
             Intent intent = new Intent(InDetailActivity.this, FacManagerMainActivity.class);
-            // 메인으로 갈 때는 중간에 쌓인 화면들을 싹 정리해주는 게 좋아!
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
             finish();
