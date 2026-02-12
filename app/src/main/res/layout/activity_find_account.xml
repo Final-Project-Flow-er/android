@@ -51,37 +51,57 @@
             android:layout_height="wrap_content"
             android:text="방법 1. 비밀번호 재설정 메일 발송"
             android:textStyle="bold"
+            android:layout_marginBottom="10dp"
             android:textColor="#000000" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="30dp"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:layout_marginBottom="30dp">
 
             <EditText
-                android:id="@+id/editTextText"
-                android:layout_width="wrap_content"
+                android:id="@+id/editTextText2"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
                 android:layout_weight="1"
                 android:ems="10"
-                android:hint="chain-g@email.com"
+                android:hint="아이디를 입력하세요"
                 android:inputType="text"
-                android:textSize="12dp"
-                android:textColor="#000000" />
+                android:textColor="#000000"
+                android:textSize="12dp" />
 
-            <TextView
-                android:id="@+id/button6"
-                android:layout_width="70dp"
-                android:layout_height="35dp"
-                android:background="@drawable/btn_navy_selector"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="발송"
-                android:textColor="#ffffff"
-                android:textSize="12sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/editTextText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:hint="chain-g@email.com"
+                    android:inputType="text"
+                    android:textColor="#000000"
+                    android:textSize="12dp" />
+
+                <TextView
+                    android:id="@+id/button6"
+                    android:layout_width="70dp"
+                    android:layout_height="35dp"
+                    android:background="@drawable/btn_navy_selector"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text="발송"
+                    android:textColor="#ffffff"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
         <TextView
