@@ -19,6 +19,8 @@ import com.example.chain_g.FranManagerMainActivity;
 import com.example.chain_g.R;
 import com.example.chain_g.auth.dto.request.LoginRequest;
 import com.example.chain_g.auth.dto.response.LoginResponse;
+import com.example.chain_g.auth.enums.UserRole;
+import com.example.chain_g.auth.jwt.TokenManager;
 import com.example.chain_g.common.ApiResponse;
 import com.example.chain_g.common.RetrofitClient;
 
@@ -30,6 +32,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
@@ -61,15 +64,26 @@ public class LoginActivity extends AppCompatActivity {
                 public void onResponse(@NonNull Call<ApiResponse<LoginResponse>> call, @NonNull Response<ApiResponse<LoginResponse>> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         LoginResponse loginData = response.body().getData();
+
                         String accessToken = loginData.getAccessToken();
+                        String refreshToken = loginData.getRefreshToken();
+                        UserRole userRole = loginData.getRole();
 
-                        Log.d("LOGIN_API", "로그인 성공! 토큰: " + accessToken);
+                        TokenManager.saveTokens(LoginActivity.this, accessToken, refreshToken);
 
-                        if (inputId.contains("fac")) {
-                            startActivity(new Intent(LoginActivity.this, FacManagerMainActivity.class));
+                        Log.d("LOGIN_API", "로그인 성공!");
+
+                        Intent intent;
+                        if (userRole == UserRole.FACTORY) {
+                            intent = new Intent(LoginActivity.this, FacManagerMainActivity.class);
+                        } else if (userRole == UserRole.FRANCHISE) {
+                            intent = new Intent(LoginActivity.this, FranManagerMainActivity.class);
                         } else {
-                            startActivity(new Intent(LoginActivity.this, FranManagerMainActivity.class));
+                            Toast.makeText(LoginActivity.this, "접근 권한이 없습니다.", Toast.LENGTH_SHORT).show();
+                            return;
                         }
+
+                        startActivity(intent);
                         finish();
 
                     } else {
