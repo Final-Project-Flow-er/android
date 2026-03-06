@@ -4,11 +4,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.chain_g.auth.activity.LoginActivity;
+import com.example.chain_g.auth.jwt.TokenManager;
 
 public class FranManagerMainActivity extends AppCompatActivity {
 
@@ -18,36 +23,39 @@ public class FranManagerMainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_fran_manager_main);
 
-        // 상단 바 겹침 방지 (기본 세팅!)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        // 1. 버튼들 연결하기 (XML ID 확인!)
-        TextView btnInput = findViewById(R.id.btn_input);   // 입고
-        TextView btnSell = findViewById(R.id.btn_sell);     // 판매
-        LinearLayout layoutLogout = findViewById(R.id.layout_logout); // 로그아웃 영역
+        TextView btnInput = findViewById(R.id.btn_input);
+        TextView btnSell = findViewById(R.id.btn_sell);
+        LinearLayout layoutLogout = findViewById(R.id.layout_logout);
 
-        // 2. [입고] 버튼 클릭 -> BoxScanActivity로 이동
+        // 2입고
         btnInput.setOnClickListener(v -> {
             Intent intent = new Intent(FranManagerMainActivity.this, BoxScanActivity.class);
-            // 가맹점주 모드라는 걸 알려주기 위해 데이터를 보낼 수도 있어!
             intent.putExtra("type", "FRAN_IN");
             startActivity(intent);
         });
 
-        // 3. [판매] 버튼 클릭 -> SaleScanActivity로 이동
+        // 판매
         btnSell.setOnClickListener(v -> {
             Intent intent = new Intent(FranManagerMainActivity.this, SaleScanActivity.class);
             startActivity(intent);
         });
 
-        // 4. [로그아웃] 버튼 클릭 -> 로그인 화면으로 돌아가거나 앱 종료
+        // 로그아웃
         layoutLogout.setOnClickListener(v -> {
-            // 현재 화면을 닫아서 이전(로그인) 화면으로 보내기!
-            finish();
+
+            TokenManager.clearTokens(this);
+
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+
+            Toast.makeText(this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
         });
     }
 }
