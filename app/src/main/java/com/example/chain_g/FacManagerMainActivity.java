@@ -49,7 +49,7 @@ public class FacManagerMainActivity extends AppCompatActivity {
             String refreshToken = TokenManager.getRefreshToken(this);
             String authHeader = "Bearer " + refreshToken;
 
-            RetrofitClient.getApiService().logout(authHeader).enqueue(new Callback<ApiResponse<String>>() {
+            RetrofitClient.getApiService(this).logout(authHeader).enqueue(new Callback<ApiResponse<String>>() {
                 @Override
                 public void onResponse(@NonNull Call<ApiResponse<String>> call, @NonNull Response<ApiResponse<String>> response) {
                     performLocalLogout();
