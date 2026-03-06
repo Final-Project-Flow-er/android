@@ -12,4 +12,8 @@ public interface ApiService {
     // 로그인
     @POST("/api/v1/auth/login")
     Call<ApiResponse<LoginResponse>> login(@Body LoginRequest request);
+
+    // 비밀번호 재설정
+
+    // 로그아웃
 }
