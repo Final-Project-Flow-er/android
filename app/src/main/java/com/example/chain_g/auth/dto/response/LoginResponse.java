@@ -8,12 +8,12 @@ public class LoginResponse {
 
     private final String refreshToken;
 
-    private final UserRole role;
+    private final UserRole userRole;
 
-    public LoginResponse(String accessToken, String refreshToken, UserRole role) {
+    public LoginResponse(String accessToken, String refreshToken, UserRole userRole) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
-        this.role = role;
+        this.userRole = userRole;
     }
 
     public String getAccessToken() {
@@ -24,7 +24,7 @@ public class LoginResponse {
         return refreshToken;
     }
 
-    public UserRole getRole() {
-        return role;
+    public UserRole getUserRole() {
+        return userRole;
     }
 }

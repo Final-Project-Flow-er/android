@@ -67,7 +67,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         String accessToken = loginData.getAccessToken();
                         String refreshToken = loginData.getRefreshToken();
-                        UserRole userRole = loginData.getRole();
+                        UserRole userRole = loginData.getUserRole();
 
                         TokenManager.saveTokens(LoginActivity.this, accessToken, refreshToken);
 
