@@ -6,6 +6,8 @@ import android.widget.LinearLayout; // ⭐ 로그아웃 레이아웃을 위해 �
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.chain_g.auth.activity.LoginActivity;
+
 public class FacManagerMainActivity extends AppCompatActivity {
 
     @Override

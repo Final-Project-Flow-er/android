@@ -1,6 +1,5 @@
-package com.example.chain_g;
+package com.example.chain_g.auth.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -9,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.chain_g.R;
 
 public class FindAccountActivity extends AppCompatActivity {
 
