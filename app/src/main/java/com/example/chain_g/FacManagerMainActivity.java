@@ -29,14 +29,13 @@ public class FacManagerMainActivity extends AppCompatActivity {
         TextView btnOutput = findViewById(R.id.btn_output);
         LinearLayout layoutLogout = findViewById(R.id.layout_logout);
 
-        // 입고
+        // 🚛 공장 입고: 박스 스캔 없이 바로 '제품 스캔' 화면으로 이동!
         btnInput.setOnClickListener(v -> {
-            Intent intent = new Intent(FacManagerMainActivity.this, BoxScanActivity.class);
-            intent.putExtra("mode", "IN");
+            Intent intent = new Intent(FacManagerMainActivity.this, FacInScanActivity.class);
             startActivity(intent);
         });
 
-        // 출고
+        // 📦 공장 출고: 기존대로 '박스 스캔' 화면으로 이동! (모드는 OUT)
         btnOutput.setOnClickListener(v -> {
             Intent intent = new Intent(FacManagerMainActivity.this, BoxScanActivity.class);
             intent.putExtra("mode", "OUT");
@@ -45,7 +44,6 @@ public class FacManagerMainActivity extends AppCompatActivity {
 
         // 로그아웃
         layoutLogout.setOnClickListener(v -> {
-
             String refreshToken = TokenManager.getRefreshToken(this);
             String authHeader = "Bearer " + refreshToken;
 

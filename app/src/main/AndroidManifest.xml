@@ -20,6 +20,10 @@
             android:name=".InDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".FacInScanActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".SaleScanActivity"
             android:exported="false" />
         <activity

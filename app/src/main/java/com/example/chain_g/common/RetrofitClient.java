@@ -9,10 +9,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
+import android.util.Log;
+
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    private static final String BASE_URL = "http://10.0.2.2:8080/";
+    private static final String BASE_URL = "http://192.168.0.30:8080/";
     private static Retrofit retrofit = null;
     private static ApiService apiService = null;
 
@@ -57,10 +59,32 @@ public class RetrofitClient {
                 return null;
             };
 
+            // 커스텀 로그 인터셉터 (바디 로그 추가)
+            Interceptor loggingInterceptor = chain -> {
+                Request request = chain.request();
+                Log.d("API_LOG", "--> " + request.method() + " " + request.url());
+                Log.d("API_LOG", "Headers: " + request.headers());
+                
+                if (request.body() != null) {
+                    okio.Buffer buffer = new okio.Buffer();
+                    request.body().writeTo(buffer);
+                    Log.d("API_LOG", "Body: " + buffer.readUtf8());
+                }
+
+                Response response = chain.proceed(request);
+                
+                Log.d("API_LOG", "<-- " + response.code() + " " + response.request().url());
+                return response;
+            };
+
+
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(authInterceptor)
+                    .addInterceptor(loggingInterceptor)
                     .authenticator(tokenAuthenticator)
                     .build();
+
+
 
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
