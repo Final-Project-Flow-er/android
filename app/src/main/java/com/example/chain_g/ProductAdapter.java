@@ -31,6 +31,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         holder.tvPName.setText(item.productName);
         holder.tvMakeDate.setText(item.productionDate);
         holder.tvExpDate.setText(item.expiryDate);
+
+        // 스캔 여부에 따라 배경색 변경
+        if (item.isScanned) {
+            holder.itemView.setBackgroundColor(android.graphics.Color.parseColor("#E7F5FF")); // 연한 파랑
+        } else {
+            holder.itemView.setBackgroundColor(android.graphics.Color.WHITE);
+        }
         
         holder.btnDelete.setOnClickListener(v -> {
             items.remove(position);
@@ -38,6 +45,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             notifyItemRangeChanged(position, items.size());
         });
     }
+
 
     @Override
     public int getItemCount() {
@@ -60,6 +68,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
 
     public static class ProductItem {
         String identifier, productCode, productName, productionDate, expiryDate;
+        boolean isScanned = false; // 스캔 완료 여부
 
         public ProductItem(String identifier, String productCode, String productName, String productionDate, String expiryDate) {
             this.identifier = identifier;
@@ -69,4 +78,5 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             this.expiryDate = expiryDate;
         }
     }
+
 }
