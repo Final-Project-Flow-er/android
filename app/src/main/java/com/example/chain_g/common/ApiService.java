@@ -66,4 +66,12 @@ public interface ApiService {
     // 출고 상세 목록 조회
     @GET("/api/v1/outbounds/boxes/items")
     Call<ApiResponse<List<OutboundItemResponse>>> getItemDetail(@Query("boxCode") String boxCode);
+
+    // 가맹점 판매 스캔 리스트 조회
+    @GET("/api/v1/franchise/inventory/scanned-sales-list")
+    Call<ApiResponse<com.example.chain_g.dto.response.ScannedForSaleResponse>> getScannedSalesList(@Query("serialCodes") List<String> serialCodes);
+
+    // 가맹점 판매 생성
+    @POST("/api/v1/franchise/sales")
+    Call<ApiResponse<Void>> createSale(@Body com.example.chain_g.dto.request.FranchiseSellRequest request);
 }
