@@ -13,6 +13,7 @@
     <TextView android:id="@+id/tv_p_name" android:layout_width="100dp" android:layout_height="wrap_content" android:text="새우깡" android:textSize="11sp" android:gravity="center" />
     <TextView android:id="@+id/tv_make_date" android:layout_width="90dp" android:layout_height="wrap_content" android:text="26.02.10" android:textSize="11sp" android:gravity="center" />
     <TextView android:id="@+id/tv_exp_date" android:layout_width="90dp" android:layout_height="wrap_content" android:text="27.02.10" android:textSize="11sp" android:gravity="center" />
+    <TextView android:id="@+id/tv_unit_price" android:layout_width="90dp" android:layout_height="wrap_content" android:text="1,200" android:textSize="11sp" android:gravity="center" android:visibility="gone" />
 
     <TextView
         android:id="@+id/btn_delete"
