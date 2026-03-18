@@ -7,10 +7,17 @@ import androidx.lifecycle.ViewModel;
 public class ScanViewModel extends ViewModel {
     private final MutableLiveData<String> boxCode = new MutableLiveData<>();
     private final MutableLiveData<String> orderCode = new MutableLiveData<>();
+    private final MutableLiveData<Long> orderItemId = new MutableLiveData<>();
 
     public void setBoxData(String boxCode, String orderCode) {
         this.boxCode.setValue(boxCode);
         this.orderCode.setValue(orderCode);
+    }
+
+    public void setBoxData(String boxCode, String orderCode, Long orderItemId) {
+        this.boxCode.setValue(boxCode);
+        this.orderCode.setValue(orderCode);
+        this.orderItemId.setValue(orderItemId);
     }
 
     public LiveData<String> getBoxCode() {
@@ -21,11 +28,19 @@ public class ScanViewModel extends ViewModel {
         return orderCode;
     }
 
+    public LiveData<Long> getOrderItemId() {
+        return orderItemId;
+    }
+
     public String getBoxCodeValue() {
         return boxCode.getValue();
     }
 
     public String getOrderCodeValue() {
         return orderCode.getValue();
+    }
+
+    public Long getOrderItemIdValue() {
+        return orderItemId.getValue();
     }
 }

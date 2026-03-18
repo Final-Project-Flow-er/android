@@ -4,13 +4,15 @@ import java.util.List;
 
 public class OutboundAssignRequest {
     private String boxCode;
+    private Long orderItemId;
     private List<String> serialCodes;
 
     public OutboundAssignRequest() {
     }
 
-    public OutboundAssignRequest(String boxCode, List<String> serialCodes) {
+    public OutboundAssignRequest(String boxCode, Long orderItemId, List<String> serialCodes) {
         this.boxCode = boxCode;
+        this.orderItemId = orderItemId;
         this.serialCodes = serialCodes;
     }
 
@@ -20,6 +22,14 @@ public class OutboundAssignRequest {
 
     public void setBoxCode(String boxCode) {
         this.boxCode = boxCode;
+    }
+
+    public Long getOrderItemId() {
+        return orderItemId;
+    }
+
+    public void setOrderItemId(Long orderItemId) {
+        this.orderItemId = orderItemId;
     }
 
     public List<String> getSerialCodes() {

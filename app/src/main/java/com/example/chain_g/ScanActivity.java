@@ -74,6 +74,7 @@ public class ScanActivity extends AppCompatActivity {
     private ProductAdapter adapter;
     private String currentBoxCode;
     private String currentOrderCode;
+    private Long currentOrderItemId;
 
 
     @Override
@@ -105,7 +106,9 @@ public class ScanActivity extends AppCompatActivity {
             try {
                 JsonObject jsonObject = new JsonParser().parse(selectedBoxJson).getAsJsonObject();
                 currentBoxCode = jsonObject.get("boxCode").getAsString();
-                currentOrderCode = jsonObject.get("orderCode").getAsString();
+                if (jsonObject.has("orderItemId")) {
+                    currentOrderItemId = jsonObject.get("orderItemId").getAsLong();
+                }
                 if (tvBoxCode != null) {
                     tvBoxCode.setText(currentBoxCode);
                 }
@@ -170,7 +173,7 @@ public class ScanActivity extends AppCompatActivity {
             }
 
 
-            OutboundAssignRequest request = new OutboundAssignRequest(currentBoxCode, serialCodes);
+            OutboundAssignRequest request = new OutboundAssignRequest(currentBoxCode, currentOrderItemId, serialCodes);
             ApiService apiService = RetrofitClient.getApiService(this);
             apiService.assignBox(request).enqueue(new Callback<ApiResponse<Void>>() {
                 @Override
@@ -317,43 +320,21 @@ public class ScanActivity extends AppCompatActivity {
     private void handleScannedQr(String qrData) {
         Log.d(TAG, "QR 처리 시작: " + qrData);
         
-        List<String> extractedCodes = new ArrayList<>();
+        OutboundUpdateRequest requestBody;
         try {
-            com.google.gson.JsonElement element = new com.google.gson.JsonParser().parse(qrData);
-            if (element.isJsonObject()) {
-                com.google.gson.JsonObject jsonObject = element.getAsJsonObject();
-                
-                // serialCodes 키에 대응 (대소문자 구분 없이)
-                com.google.gson.JsonArray array = null;
-                for (String key : jsonObject.keySet()) {
-                    if (key.equalsIgnoreCase("serialCodes")) {
-                        array = jsonObject.getAsJsonArray(key);
-                        break;
-                    }
-                }
-
-                if (array != null) {
-                    for (int i = 0; i < array.size(); i++) {
-                        extractedCodes.add(array.get(i).getAsString().trim().toUpperCase());
-                    }
-                } else if (jsonObject.has("serialCode")) {
-                    extractedCodes.add(jsonObject.get("serialCode").getAsString().trim().toUpperCase());
-                }
+            requestBody = new com.google.gson.Gson().fromJson(qrData, OutboundUpdateRequest.class);
+            if (requestBody == null || requestBody.getSerialCode() == null) {
+                showErrorAndResume("유효하지 않은 QR 데이터입니다. (시리얼 코드 누락)");
+                return;
             }
         } catch (Exception e) {
             Log.e(TAG, "QR 파싱 에러: " + e.getMessage());
-        }
-
-        if (extractedCodes.isEmpty()) {
-            showErrorAndResume("QR 코드에서 유효한 시리얼 코드를 찾을 수 없습니다.");
+            showErrorAndResume("QR 코드 형식이 올바르지 않습니다.");
             return;
         }
 
-        // 여러 개의 코드가 올 수 있지만, 현재 로직상 리스트의 첫 번째 항목을 주 타겟으로 하거나 
-        // 리스트 전체를 API로 보냅니다. (사용자 요청에 따라 리스트 형태로 전송)
-        final String mainSerialCode = extractedCodes.get(0);
-        Log.d(TAG, "최종 추출 시리얼 코드 리스트: " + extractedCodes);
-
+        final String mainSerialCode = requestBody.getSerialCode().trim().toUpperCase();
+        Log.d(TAG, "추출된 시리얼 코드: " + mainSerialCode);
 
         ProductAdapter.ProductItem existingItem = null;
         for(ProductAdapter.ProductItem item : productItems) {
@@ -365,7 +346,7 @@ public class ScanActivity extends AppCompatActivity {
 
         if (existingItem != null && existingItem.isScanned) {
             Log.d(TAG, "이미 스캔 완료된 항목임: " + mainSerialCode);
-            isScanning = true; // 다시 스캔 재개
+            isScanning = true;
             return;
         }
 
@@ -375,8 +356,6 @@ public class ScanActivity extends AppCompatActivity {
         }
 
         showLoading(true);
-
-        OutboundUpdateRequest requestBody = new OutboundUpdateRequest(extractedCodes);
 
         Log.d(TAG, "API 호출: /api/v1/outbounds/scans | Body: " + new com.google.gson.Gson().toJson(requestBody));
 
@@ -393,8 +372,12 @@ public class ScanActivity extends AppCompatActivity {
                         finalItem.isScanned = true;
                         adapter.notifyDataSetChanged();
                     } else {
-                        // 목록에 없던 제품이면 새로 추가
-                        ProductAdapter.ProductItem newItem = new ProductAdapter.ProductItem(mainSerialCode, "PROD-X", "스캔 제품", "2024-05-20", "2025-05-20");
+                        // 목록에 없던 제품이면 새로 추가 (QR에서 받아온 정보 활용)
+                        String prodDisplay = requestBody.getProductId() != null ? "ID: " + requestBody.getProductId() : "PROD-X";
+                        String dateDisplay = requestBody.getManufactureDate() != null ? requestBody.getManufactureDate() : "미정";
+                        
+                        ProductAdapter.ProductItem newItem = new ProductAdapter.ProductItem(
+                                mainSerialCode, prodDisplay, "스캔된 제품", dateDisplay, "-");
                         newItem.isScanned = true;
                         productItems.add(0, newItem);
                         adapter.notifyItemInserted(0);

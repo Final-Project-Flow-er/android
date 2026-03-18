@@ -118,7 +118,6 @@ public class BoxScanActivity extends AppCompatActivity {
 
         // 2. 리스트 설정 (항목 클릭 시 moveToDetail 호출)
         boxItems = new ArrayList<>();
-        boxItems.add(new BoxAdapter.BoxItem("BOX-TEST-001", "PROD-001", "테스트 박스 상품"));
         
         adapter = new BoxAdapter(boxItems, this::moveToDetail); // 👈 여기서 클릭 시 moveToDetail 실행!
         rvBoxList.setLayoutManager(new LinearLayoutManager(this));
@@ -270,25 +269,31 @@ public class BoxScanActivity extends AppCompatActivity {
         } else {
             // 출고(OUT) 모드 등: BOX 코드와 ORDER 코드 추출
             String boxCode = null;
-            String orderCode = null;
+            Long orderItemId = null;
+            String orderCode = "ORDER-PENDING"; // Default value for orderCode
             try {
                 JsonObject jsonObject = new JsonParser().parse(qrData).getAsJsonObject();
                 if (jsonObject.has("boxCode")) {
                     boxCode = jsonObject.get("boxCode").getAsString().trim().toUpperCase();
                 }
-                if (jsonObject.has("orderCode")) {
-                    orderCode = jsonObject.get("orderCode").getAsString().trim().toUpperCase();
+                if (jsonObject.has("orderItemId")) {
+                    orderItemId = jsonObject.get("orderItemId").getAsLong();
                 }
+                // If orderCode is also expected in JSON, add parsing here
+                // if (jsonObject.has("orderCode")) {
+                //     orderCode = jsonObject.get("orderCode").getAsString().trim().toUpperCase();
+                // }
             } catch (Exception e) {
-                Log.d(TAG, "출고 QR 파싱 실패, raw 데이터 사용 시도");
+                Log.d(TAG, "출고 QR 파싱 실패, raw 데이터 사용 시도: " + e.getMessage());
             }
 
             if (boxCode == null || boxCode.isEmpty()) {
                 boxCode = qrData.trim().toUpperCase();
             }
-            if (orderCode == null || orderCode.isEmpty()) {
-                orderCode = "ORDER-PENDING";
-            }
+            // orderCode already has a default value "ORDER-PENDING"
+            // If you want to allow qrData to be the orderCode if it's not a boxCode,
+            // you'd need more complex logic here. For now, boxCode takes precedence.
+
 
             // 중복 체크
             for (BoxAdapter.BoxItem item : boxItems) {
@@ -298,11 +303,11 @@ public class BoxScanActivity extends AppCompatActivity {
                 }
             }
 
-            viewModel.setBoxData(boxCode, orderCode);
-            boxItems.add(0, new BoxAdapter.BoxItem(boxCode, orderCode, "스캔된 박스"));
+            viewModel.setBoxData(boxCode, orderCode, orderItemId);
+            boxItems.add(0, new BoxAdapter.BoxItem(boxCode, orderCode, "스캔된 박스", orderItemId));
             adapter.notifyItemInserted(0);
             rvBoxList.scrollToPosition(0);
-            Log.d(TAG, "박스 스캔 완료(OUT): " + boxCode + " | Order: " + orderCode);
+            Log.d(TAG, "박스 스캔 완료(OUT): " + boxCode + " | OrderItemId: " + orderItemId);
             isScanning = true;
         }
 
@@ -337,17 +342,14 @@ public class BoxScanActivity extends AppCompatActivity {
 
 
     // 🚀 모드별 화면 이동 로직 (완전 보강)
-    public void moveToDetail(String boxCode) {
+    public void moveToDetail(BoxAdapter.BoxItem item) {
         Intent intent;
-        
-        // 클릭된 박스에 해당하는 orderCode 찾기 (데이터 일관성 위해 ViewModel 체크)
-        String orderCode = "ORDER-UNKNOWN";
-        if (boxCode.equals(viewModel.getBoxCodeValue())) {
-            orderCode = viewModel.getOrderCodeValue();
-        }
+        String boxCode = item.boxCode;
+        String orderCode = item.productCode; // orderCode as productCode in BoxItem for now
+        Long orderItemId = item.orderItemId;
 
         if ("OUT".equals(currentMode)) {
-            Log.d(TAG, "출고 모드 감지: ScanActivity로 이동합니다.");
+            Log.d(TAG, "출고 모드 감지: ScanActivity로 이동합니다. OrderItemId: " + orderItemId);
             intent = new Intent(BoxScanActivity.this, ScanActivity.class);
         } else {
             Log.d(TAG, "입고 모드 감지: InDetailActivity로 이동합니다.");
@@ -358,6 +360,9 @@ public class BoxScanActivity extends AppCompatActivity {
         JsonObject jsonExport = new JsonObject();
         jsonExport.addProperty("boxCode", boxCode);
         jsonExport.addProperty("orderCode", orderCode);
+        if (orderItemId != null) {
+            jsonExport.addProperty("orderItemId", orderItemId);
+        }
         
         intent.putExtra("selected_box", jsonExport.toString());
         intent.putExtra("mode", currentMode);
