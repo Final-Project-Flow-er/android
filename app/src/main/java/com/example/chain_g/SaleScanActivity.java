@@ -189,11 +189,21 @@ public class SaleScanActivity extends AppCompatActivity {
                         String rawValue = barcode.getRawValue();
                         if (rawValue != null) {
                             String code = rawValue.trim();
+                            
+                            // QR 데이터에서 시리얼 코드 미리 추출하여 중복 체크 강화
+                            String extractedCode = code.toUpperCase();
+                            try {
+                                com.google.gson.JsonObject jsonObject = new com.google.gson.JsonParser().parse(code).getAsJsonObject();
+                                if (jsonObject.has("serialCode")) {
+                                    extractedCode = jsonObject.get("serialCode").getAsString().trim().toUpperCase();
+                                }
+                            } catch (Exception ignored) {}
+
                             synchronized (this) {
                                 if (isScanning) {
                                     boolean alreadyInList = false;
                                     for (String existing : serialCodes) {
-                                        if (existing.equalsIgnoreCase(code)) {
+                                        if (existing.equalsIgnoreCase(extractedCode)) {
                                             alreadyInList = true;
                                             break;
                                         }
@@ -201,7 +211,8 @@ public class SaleScanActivity extends AppCompatActivity {
 
                                     if (!alreadyInList) {
                                         isScanning = false;
-                                        runOnUiThread(() -> handleScannedQr(code));
+                                        final String dataToPass = code;
+                                        runOnUiThread(() -> handleScannedQr(dataToPass));
                                         break;
                                     }
                                 }
@@ -213,14 +224,25 @@ public class SaleScanActivity extends AppCompatActivity {
     }
 
     private void handleScannedQr(String qrData) {
+        String extractedSerialCode = qrData;
+        try {
+            com.google.gson.JsonObject jsonObject = new com.google.gson.JsonParser().parse(qrData).getAsJsonObject();
+            if (jsonObject.has("serialCode")) {
+                extractedSerialCode = jsonObject.get("serialCode").getAsString().trim().toUpperCase();
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "QR 데이터가 JSON 형식이 아니므로 일반 텍스트로 처리합니다.");
+            extractedSerialCode = qrData.trim().toUpperCase();
+        }
+
         for (String existing : serialCodes) {
-            if (existing.equalsIgnoreCase(qrData)) {
+            if (existing.equalsIgnoreCase(extractedSerialCode)) {
                 isScanning = true;
                 return;
             }
         }
 
-        serialCodes.add(qrData);
+        serialCodes.add(extractedSerialCode);
         fetchScannedSalesList();
     }
 
@@ -291,6 +313,7 @@ public class SaleScanActivity extends AppCompatActivity {
                     item.getProductId(),
                     item.getProductCode(),
                     item.getProductName(),
+                    1,
                     item.getUnitPrice(),
                     item.getSerialCode()
             ));
