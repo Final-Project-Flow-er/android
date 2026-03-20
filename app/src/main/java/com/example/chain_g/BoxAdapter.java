@@ -14,7 +14,7 @@ public class BoxAdapter extends RecyclerView.Adapter<BoxAdapter.ViewHolder> {
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
-        void onItemClick(String boxCode);
+        void onItemClick(BoxItem item);
     }
 
     public BoxAdapter(List<BoxItem> items, OnItemClickListener listener) {
@@ -36,7 +36,7 @@ public class BoxAdapter extends RecyclerView.Adapter<BoxAdapter.ViewHolder> {
         holder.tvProductCode.setText(item.productCode);
         holder.tvItemName.setText(item.itemName);
         
-        holder.itemView.setOnClickListener(v -> listener.onItemClick(item.boxCode));
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(item));
     }
 
     @Override
@@ -59,11 +59,19 @@ public class BoxAdapter extends RecyclerView.Adapter<BoxAdapter.ViewHolder> {
         String boxCode;
         String productCode;
         String itemName;
+        Long orderItemId;
 
         public BoxItem(String boxCode, String productCode, String itemName) {
             this.boxCode = boxCode;
             this.productCode = productCode;
             this.itemName = itemName;
+        }
+
+        public BoxItem(String boxCode, String productCode, String itemName, Long orderItemId) {
+            this.boxCode = boxCode;
+            this.productCode = productCode;
+            this.itemName = itemName;
+            this.orderItemId = orderItemId;
         }
     }
 }

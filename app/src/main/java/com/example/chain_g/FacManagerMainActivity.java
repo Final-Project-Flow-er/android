@@ -2,9 +2,21 @@ package com.example.chain_g;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.LinearLayout; // ⭐ 로그아웃 레이아웃을 위해 추가!
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.chain_g.auth.activity.LoginActivity;
+import com.example.chain_g.auth.jwt.TokenManager;
+import com.example.chain_g.common.ApiResponse;
+import com.example.chain_g.common.RetrofitClient;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class FacManagerMainActivity extends AppCompatActivity {
 
@@ -13,35 +25,48 @@ public class FacManagerMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fac_manager_main);
 
-        // 1. 버튼 및 레이아웃 연결하기
-        TextView btnInput = findViewById(R.id.btn_input);   // 입고 버튼
-        TextView btnOutput = findViewById(R.id.btn_output); // 출고 버튼
-        LinearLayout layoutLogout = findViewById(R.id.layout_logout); // ⭐ 로그아웃 레이아웃
+        TextView btnInput = findViewById(R.id.btn_input);
+        TextView btnOutput = findViewById(R.id.btn_output);
+        LinearLayout layoutLogout = findViewById(R.id.layout_logout);
 
-        // 2. [입고] 버튼 눌렀을 때
+        // 🚛 공장 입고: 박스 스캔 없이 바로 '제품 스캔' 화면으로 이동!
         btnInput.setOnClickListener(v -> {
-            Intent intent = new Intent(FacManagerMainActivity.this, BoxScanActivity.class);
-            intent.putExtra("mode", "IN");
+            Intent intent = new Intent(FacManagerMainActivity.this, FacInScanActivity.class);
             startActivity(intent);
         });
 
-        // 3. [출고] 버튼 눌렀을 때
+        // 📦 공장 출고: 기존대로 '박스 스캔' 화면으로 이동! (모드는 OUT)
         btnOutput.setOnClickListener(v -> {
             Intent intent = new Intent(FacManagerMainActivity.this, BoxScanActivity.class);
             intent.putExtra("mode", "OUT");
             startActivity(intent);
         });
 
-        // 4. [로그아웃] 영역 눌렀을 때 (아이콘+글자 포함)
+        // 로그아웃
         layoutLogout.setOnClickListener(v -> {
-            // ⭐ 로그인 화면(LoginActivity)으로 이동! (파일 이름이 다르면 수정해줘!)
-            Intent intent = new Intent(FacManagerMainActivity.this, LoginActivity.class);
+            String refreshToken = TokenManager.getRefreshToken(this);
+            String authHeader = "Bearer " + refreshToken;
 
-            // ⭐ 중요! 로그인 화면으로 갈 때 이전 화면 기록(스택)을 다 지워야 해!
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            RetrofitClient.getApiService(this).logout(authHeader).enqueue(new Callback<ApiResponse<String>>() {
+                @Override
+                public void onResponse(@NonNull Call<ApiResponse<String>> call, @NonNull Response<ApiResponse<String>> response) {
+                    performLocalLogout();
+                }
 
-            startActivity(intent);
-            finish(); // 현재 메인 화면 닫기!
+                @Override
+                public void onFailure(@NonNull Call<ApiResponse<String>> call, @NonNull Throwable t) {
+                    performLocalLogout();
+                }
+            });
         });
+    }
+
+    private void performLocalLogout() {
+        TokenManager.clearTokens(this);
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+        Toast.makeText(this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
     }
 }

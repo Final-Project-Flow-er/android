@@ -27,19 +27,34 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.chain_g.common.ApiResponse;
+import com.example.chain_g.common.ApiService;
+import com.example.chain_g.common.RetrofitClient;
+import com.example.chain_g.dto.request.InboundScanBoxRequest;
+import com.example.chain_g.viewmodel.ScanViewModel;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import com.google.common.util.concurrent.ListenableFuture;
+
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 
 public class BoxScanActivity extends AppCompatActivity {
 
@@ -51,12 +66,21 @@ public class BoxScanActivity extends AppCompatActivity {
     private ExecutorService cameraExecutor;
     private List<BoxAdapter.BoxItem> boxItems;
     private BoxAdapter adapter;
+    private ScanViewModel viewModel;
+    private volatile boolean isScanning = true;
+    private android.app.ProgressDialog progressDialog;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_box_scan);
+
+        viewModel = new ViewModelProvider(this).get(ScanViewModel.class);
+
 
         // 1. 모드 확인 (FacManagerMainActivity에서 보낸 데이터)
         currentMode = getIntent().getStringExtra("mode");
@@ -94,7 +118,6 @@ public class BoxScanActivity extends AppCompatActivity {
 
         // 2. 리스트 설정 (항목 클릭 시 moveToDetail 호출)
         boxItems = new ArrayList<>();
-        boxItems.add(new BoxAdapter.BoxItem("BOX-TEST-001", "PROD-001", "테스트 박스 상품"));
         
         adapter = new BoxAdapter(boxItems, this::moveToDetail); // 👈 여기서 클릭 시 moveToDetail 실행!
         rvBoxList.setLayoutManager(new LinearLayoutManager(this));
@@ -146,7 +169,11 @@ public class BoxScanActivity extends AppCompatActivity {
 
     @SuppressLint("UnsafeOptInUsageError")
     private void scanBarcodes(ImageProxy imageProxy) {
-        if (imageProxy.getImage() == null) return;
+        if (imageProxy.getImage() == null || !isScanning) {
+            imageProxy.close();
+            return;
+        }
+
         InputImage image = InputImage.fromMediaImage(imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
         BarcodeScanner scanner = BarcodeScanning.getClient();
         scanner.process(image)
@@ -154,39 +181,194 @@ public class BoxScanActivity extends AppCompatActivity {
                     for (Barcode barcode : barcodes) {
                         String rawValue = barcode.getRawValue();
                         if (rawValue != null) {
-                            runOnUiThread(() -> handleScannedQr(rawValue));
+                            synchronized (this) {
+                                if (isScanning) {
+                                    isScanning = false;
+                                    Log.d(TAG, "QR 스캔 감지: " + rawValue);
+                                    runOnUiThread(() -> handleScannedQr(rawValue));
+                                    break;
+                                }
+                            }
                         }
                     }
                 })
+
                 .addOnCompleteListener(task -> imageProxy.close());
     }
 
     private void handleScannedQr(String qrData) {
-        for(BoxAdapter.BoxItem item : boxItems) {
-            if(item.boxCode.equals(qrData)) return; 
+        Log.d(TAG, "QR 처리 시작 (" + currentMode + "): " + qrData);
+
+        if ("IN".equals(currentMode)) {
+            // 가맹점 입고(IN) 모드: 이제 서버는 boxCode 하나만 받음 (나머지는 서버에서 자동 처리)
+            String boxCode = null;
+            try {
+                // 1. JSON 형식 시도
+                JsonObject jsonObject = new JsonParser().parse(qrData).getAsJsonObject();
+                if (jsonObject.has("boxCode")) {
+                    boxCode = jsonObject.get("boxCode").getAsString();
+                } else if (jsonObject.has("code")) {
+                    boxCode = jsonObject.get("code").getAsString();
+                }
+            } catch (Exception e) {
+                // 2. JSON이 아니면 그냥 raw string을 코드로 간주 (유연성)
+                boxCode = qrData;
+            }
+
+            if (boxCode == null || boxCode.trim().isEmpty()) {
+                showErrorAndResume("유효하지 않은 박스 데이터입니다.");
+                return;
+            }
+
+            final String finalBoxCode = boxCode.trim().toUpperCase();
+            
+            // 중복 스캔 체크
+            for(BoxAdapter.BoxItem item : boxItems) {
+                if(item.boxCode.equalsIgnoreCase(finalBoxCode)) {
+                    isScanning = true;
+                    return;
+                }
+            }
+
+            // 바뀐 DTO 규격: boxCode만 전송
+            InboundScanBoxRequest request = new InboundScanBoxRequest(finalBoxCode);
+
+            showLoading(true);
+            ApiService apiService = RetrofitClient.getApiService(this);
+            Log.d(TAG, "가맹점 입고 API 호출 (Simplified): " + new Gson().toJson(request));
+            
+            apiService.scanInboundBoxes(request).enqueue(new Callback<ApiResponse<Void>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                    showLoading(false);
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "가맹점 입고 성공: " + finalBoxCode);
+                        boxItems.add(0, new BoxAdapter.BoxItem(finalBoxCode, "BOX-IN", "입고 성공"));
+                        adapter.notifyItemInserted(0);
+                        rvBoxList.scrollToPosition(0);
+                        Toast.makeText(BoxScanActivity.this, "박스 입고 완료: " + finalBoxCode, Toast.LENGTH_SHORT).show();
+                        isScanning = true;
+                    } else {
+                        String errorMsg = "(Code: " + response.code() + ")";
+                        try {
+                            if (response.errorBody() != null) errorMsg += "\n" + response.errorBody().string();
+                        } catch (Exception e) {}
+                        Log.e(TAG, "가맹점 입고 실패: " + errorMsg);
+                        showErrorAndResume("박스 입고 실패: " + errorMsg);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                    showLoading(false);
+                    Log.e(TAG, "API 통신 오류", t);
+                    showErrorAndResume("서버 통신 오류: " + t.getMessage());
+                }
+            });
+
+        } else {
+            // 출고(OUT) 모드 등: BOX 코드와 ORDER 코드 추출
+            String boxCode = null;
+            Long orderItemId = null;
+            String orderCode = "ORDER-PENDING"; // Default value for orderCode
+            try {
+                JsonObject jsonObject = new JsonParser().parse(qrData).getAsJsonObject();
+                if (jsonObject.has("boxCode")) {
+                    boxCode = jsonObject.get("boxCode").getAsString().trim().toUpperCase();
+                }
+                if (jsonObject.has("orderItemId")) {
+                    orderItemId = jsonObject.get("orderItemId").getAsLong();
+                }
+                // If orderCode is also expected in JSON, add parsing here
+                // if (jsonObject.has("orderCode")) {
+                //     orderCode = jsonObject.get("orderCode").getAsString().trim().toUpperCase();
+                // }
+            } catch (Exception e) {
+                Log.d(TAG, "출고 QR 파싱 실패, raw 데이터 사용 시도: " + e.getMessage());
+            }
+
+            if (boxCode == null || boxCode.isEmpty()) {
+                boxCode = qrData.trim().toUpperCase();
+            }
+            // orderCode already has a default value "ORDER-PENDING"
+            // If you want to allow qrData to be the orderCode if it's not a boxCode,
+            // you'd need more complex logic here. For now, boxCode takes precedence.
+
+
+            // 중복 체크
+            for (BoxAdapter.BoxItem item : boxItems) {
+                if (item.boxCode.equalsIgnoreCase(boxCode)) {
+                    isScanning = true;
+                    return;
+                }
+            }
+
+            viewModel.setBoxData(boxCode, orderCode, orderItemId);
+            boxItems.add(0, new BoxAdapter.BoxItem(boxCode, orderCode, "스캔된 박스", orderItemId));
+            adapter.notifyItemInserted(0);
+            rvBoxList.scrollToPosition(0);
+            Log.d(TAG, "박스 스캔 완료(OUT): " + boxCode + " | OrderItemId: " + orderItemId);
+            isScanning = true;
         }
-        boxItems.add(0, new BoxAdapter.BoxItem(qrData, "SCAN-PROD", "스캔된 박스"));
-        adapter.notifyItemInserted(0);
-        rvBoxList.scrollToPosition(0);
+
     }
 
+
+    private void showLoading(boolean show) {
+        if (show) {
+            if (progressDialog == null) {
+                progressDialog = new android.app.ProgressDialog(this);
+                progressDialog.setMessage("확인 중...");
+                progressDialog.setCancelable(false);
+            }
+            progressDialog.show();
+        } else if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
+    private void showErrorAndResume(String message) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("알림")
+                .setMessage(message)
+                .setPositiveButton("확인", (dialog, which) -> {
+                    isScanning = true; // 확인 버튼 누르면 스캔 재개
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+
+
+
     // 🚀 모드별 화면 이동 로직 (완전 보강)
-    public void moveToDetail(String boxCode) {
+    public void moveToDetail(BoxAdapter.BoxItem item) {
         Intent intent;
+        String boxCode = item.boxCode;
+        String orderCode = item.productCode; // orderCode as productCode in BoxItem for now
+        Long orderItemId = item.orderItemId;
+
         if ("OUT".equals(currentMode)) {
-            // ⭐ 출고 모드 -> ScanActivity (제품 스캔 화면)로 이동!
-            Log.d(TAG, "출고 모드 감지: ScanActivity로 이동합니다.");
+            Log.d(TAG, "출고 모드 감지: ScanActivity로 이동합니다. OrderItemId: " + orderItemId);
             intent = new Intent(BoxScanActivity.this, ScanActivity.class);
         } else {
-            // ⭐ 입고 모드 -> InDetailActivity (입고 내역 화면)로 이동!
             Log.d(TAG, "입고 모드 감지: InDetailActivity로 이동합니다.");
             intent = new Intent(BoxScanActivity.this, InDetailActivity.class);
         }
 
-        intent.putExtra("selected_box", boxCode);
+        // JSON 형식으로 조립해서 전달 (ScanActivity가 JSON 파싱함)
+        JsonObject jsonExport = new JsonObject();
+        jsonExport.addProperty("boxCode", boxCode);
+        jsonExport.addProperty("orderCode", orderCode);
+        if (orderItemId != null) {
+            jsonExport.addProperty("orderItemId", orderItemId);
+        }
+        
+        intent.putExtra("selected_box", jsonExport.toString());
         intent.putExtra("mode", currentMode);
         startActivity(intent);
     }
+
 
     @Override
     protected void onDestroy() {
